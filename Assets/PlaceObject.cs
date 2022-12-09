@@ -11,14 +11,16 @@ public class PlaceObject : MonoBehaviour
     public GameObject marker;
 
     private MLInputDevice controller;
+    public GameObject Mesh;
     
     // Start is called before the first frame update
     void Start()
     {
         MLInput.OnControllerButtonDown += OnButtonDown;
+        MLInput.OnControllerButtonUp += OnButtonUp;
     }
 
-    private void OnButtonDown(byte controllerid, MLInput.Controller.Button button)
+    private void OnButtonUp(byte controllerid, MLInput.Controller.Button button)
     {
         if (button == MLInput.Controller.Button.Bumper)
         {
@@ -28,12 +30,22 @@ public class PlaceObject : MonoBehaviour
                 //GameObject placeObject = Instantiate(ObjectToPlace, hit.point, Quaternion.Euler(hit.normal));
                 objectToPlace.transform.position = hit.point;
             }
+            Mesh.SetActive(false);
+        }
+    }
+
+    private void OnButtonDown(byte controllerid, MLInput.Controller.Button button)
+    {
+        if (button == MLInput.Controller.Button.Bumper)
+        {
+            Mesh.SetActive(true);
         }
     }
 
     private void OnDestroy()
     {
         MLInput.OnControllerButtonDown -= OnButtonDown;
+        MLInput.OnControllerButtonUp -= OnButtonUp;
     }
 
 

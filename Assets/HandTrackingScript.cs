@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using UnityEngine.Serialization;
 using UnityEngine.XR.MagicLeap;
 
@@ -9,11 +10,15 @@ public class HandTrackingScript : MonoBehaviour
     public enum HandPoses
     {
         Ok,
-        Finger,
+        Fist,
         Thumb,
         OpenHand,
         Pinch,
-        NoPose
+        C,
+        Finger,
+        L,
+        NoPose,
+        NoHand
     };
 
     public HandPoses leftHandPose = HandPoses.NoPose;
@@ -35,18 +40,24 @@ public class HandTrackingScript : MonoBehaviour
     [FormerlySerializedAs("rightPointHand")]
     public Transform rightHandTransform;
 
-    private float oldDistance;
 
     private MLHandTracking.HandKeyPose[] _gestures;
 
+    public GameObject TextPanel;
+
     private void Start()
     {
-        _gestures = new MLHandTracking.HandKeyPose[5];
+        _gestures = new MLHandTracking.HandKeyPose[10];
         _gestures[0] = MLHandTracking.HandKeyPose.Ok;
-        _gestures[1] = MLHandTracking.HandKeyPose.Finger;
+        _gestures[1] = MLHandTracking.HandKeyPose.Fist;
         _gestures[2] = MLHandTracking.HandKeyPose.OpenHand;
         _gestures[3] = MLHandTracking.HandKeyPose.Pinch;
         _gestures[4] = MLHandTracking.HandKeyPose.Thumb;
+        _gestures[5] = MLHandTracking.HandKeyPose.C;
+        _gestures[6] = MLHandTracking.HandKeyPose.L;
+        _gestures[7] = MLHandTracking.HandKeyPose.Finger;
+        _gestures[8] = MLHandTracking.HandKeyPose.NoHand;
+        _gestures[9] = MLHandTracking.HandKeyPose.NoPose;
         MLHandTracking.KeyPoseManager.EnableKeyPoses(_gestures, true, false);
         leftPos = new Vector3[3];
         rightPos = new Vector3[3];
@@ -56,10 +67,39 @@ public class HandTrackingScript : MonoBehaviour
     {
         leftHandTransform.position = leftPos[1];
         rightHandTransform.position = rightPos[1];
+        
+        leftTextMesh.text = leftHandPose.ToString();
+        rightTextMesh.text = rightHandPose.ToString();
 
         UpdateHandPose();
         ShowPoints();
+        UpdatePinch();
+        if (leftHandPose == HandPoses.Fist)
+        {
+            TextPanel.SetActive(false);
+        }
+        else if (leftHandPose == HandPoses.OpenHand)
+        {
+            TextPanel.SetActive(true);
+        }
 
+        if (leftHandPose == HandPoses.C)
+        {
+            ManipulateObject.Instance.ChangeHeight(-0.2f);
+        }
+        else if (leftHandPose == HandPoses.L)
+        {
+            ManipulateObject.Instance.ChangeHeight(0.2f);
+        }
+    }
+
+    public float oldDistance;
+    public float difference;
+    public TextMesh leftTextMesh;
+    public TextMesh rightTextMesh;
+
+    private void UpdatePinch()
+    {
         if (leftHandPose == HandPoses.Pinch)
         {
             sphereThumbLeft.gameObject.GetComponent<Renderer>().material.color = Color.red;
@@ -87,10 +127,12 @@ public class HandTrackingScript : MonoBehaviour
             {
                 var newDistance = leftHandTransform.position - rightHandTransform.position;
 
-                if (oldDistance > newDistance.magnitude)
-                    ManipulateObject.Instance.ChangeScale(-1);
-                else
-                    ManipulateObject.Instance.ChangeScale(1);
+                difference = newDistance.magnitude - oldDistance;
+
+                if (difference > 0.01f)
+                    ManipulateObject.Instance.ChangeScale(3);
+                else if (difference < -0.01f)
+                    ManipulateObject.Instance.ChangeScale(-3);
 
                 oldDistance = newDistance.magnitude;
             }
@@ -102,9 +144,9 @@ public class HandTrackingScript : MonoBehaviour
         {
             leftHandPose = HandPoses.Ok;
         }
-        else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.Finger))
+        else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.Fist))
         {
-            leftHandPose = HandPoses.Finger;
+            leftHandPose = HandPoses.Fist;
         }
         else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.OpenHand))
         {
@@ -118,6 +160,26 @@ public class HandTrackingScript : MonoBehaviour
         {
             leftHandPose = HandPoses.Thumb;
         }
+        else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.C))
+        {
+            leftHandPose = HandPoses.C;
+        }
+        else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.L))
+        {
+            leftHandPose = HandPoses.L;
+        }
+        else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.Finger))
+        {
+            leftHandPose = HandPoses.Finger;
+        }
+        else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.NoHand))
+        {
+            leftHandPose = HandPoses.NoHand;
+        }
+        else if (GetGesture(MLHandTracking.Left, MLHandTracking.HandKeyPose.NoPose))
+        {
+            leftHandPose = HandPoses.NoPose;
+        }
         else
         {
             leftHandPose = HandPoses.NoPose;
@@ -127,9 +189,9 @@ public class HandTrackingScript : MonoBehaviour
         {
             rightHandPose = HandPoses.Ok;
         }
-        else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.Finger))
+        else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.Fist))
         {
-            rightHandPose = HandPoses.Finger;
+            rightHandPose = HandPoses.Fist;
         }
         else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.OpenHand))
         {
@@ -142,6 +204,26 @@ public class HandTrackingScript : MonoBehaviour
         else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.Thumb))
         {
             rightHandPose = HandPoses.Thumb;
+        }
+        else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.C))
+        {
+            rightHandPose = HandPoses.C;
+        }
+        else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.L))
+        {
+            rightHandPose = HandPoses.L;
+        }
+        else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.Finger))
+        {
+            rightHandPose = HandPoses.Finger;
+        }
+        else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.NoHand))
+        {
+            rightHandPose = HandPoses.NoHand;
+        }
+        else if (GetGesture(MLHandTracking.Right, MLHandTracking.HandKeyPose.NoPose))
+        {
+            rightHandPose = HandPoses.NoPose;
         }
         else
         {

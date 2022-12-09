@@ -79,6 +79,11 @@ public class ManipulateObject : StaticInstance<ManipulateObject>
     {
         selectedGameObject.transform.Rotate(new Vector3(0, value * rotationMultiply, 0) * Time.deltaTime);
     }
+    
+    public void ChangeHeight(float value)
+    {
+        selectedGameObject.transform.Translate(new Vector3(0, value, 0) * Time.deltaTime);
+    }
 
     // Update is called once per frame
     void Update()

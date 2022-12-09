@@ -30,14 +30,14 @@ public class DynamicBeam : MonoBehaviour
         if (Physics.Raycast(transform.position, transform.forward, out hit))
         {
             beamLine.useWorldSpace = true;
-            //beamLine.SetPosition(0, transform.position);
-            //beamLine.SetPosition(1, hit.point);
+            beamLine.SetPosition(0, transform.position);
+            beamLine.SetPosition(1, hit.point);
         }
         else
         {
-            //beamLine.useWorldSpace = false;
-            //beamLine.SetPosition(0, transform.position);
-            //beamLine.SetPosition(1, hit.point);
+            beamLine.useWorldSpace = false;
+            beamLine.SetPosition(0, Vector3.zero);
+            beamLine.SetPosition(1, Vector3.forward * 5);
         }
     }
 }
