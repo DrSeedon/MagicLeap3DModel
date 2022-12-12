@@ -11,7 +11,7 @@ public class PlaceObject : MonoBehaviour
     public GameObject marker;
 
     private MLInputDevice controller;
-    public GameObject Mesh;
+    public GameObject meshOcclusion;
     
     // Start is called before the first frame update
     void Start()
@@ -30,15 +30,14 @@ public class PlaceObject : MonoBehaviour
                 //GameObject placeObject = Instantiate(ObjectToPlace, hit.point, Quaternion.Euler(hit.normal));
                 objectToPlace.transform.position = hit.point;
             }
-            Mesh.SetActive(false);
         }
     }
 
     private void OnButtonDown(byte controllerid, MLInput.Controller.Button button)
     {
-        if (button == MLInput.Controller.Button.Bumper)
+        if (button == MLInput.Controller.Button.HomeTap)
         {
-            Mesh.SetActive(true);
+            meshOcclusion.SetActive(!meshOcclusion.activeSelf);
         }
     }
 
